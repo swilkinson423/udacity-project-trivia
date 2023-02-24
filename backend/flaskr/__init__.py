@@ -13,19 +13,51 @@ def create_app(test_config=None):
     app = Flask(__name__)
     setup_db(app)
 
+
     """
     @TODO: Set up CORS. Allow '*' for origins. Delete the sample route after completing the TODOs
     """
+    # CORS Headers
+    @app.after_request
+    def after_request(response):
+        response.headers.add("Access-Control-Allow-Headers", "Content-Type,Authorization,true")
+        response.headers.add("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,OPTIONS")
+        return response
+
 
     """
     @TODO: Use the after_request decorator to set Access-Control-Allow
     """
+
+
 
     """
     @TODO:
     Create an endpoint to handle GET requests
     for all available categories.
     """
+    @app.route('/books')
+    # Route that retrivies all books, paginated.
+    # TEST: When completed, the webpage will display books including title, author, and rating shown as stars
+    def retrieve_books():
+
+        selection = Book.query.order_by(Book.id).all()
+        current_books = paginate_books(request, selection)
+
+        if len(current_books) == 0:
+            abort(404)
+
+        return jsonify({
+            'success':True,
+            'books':current_books,
+            'total_books':len(Book.query.all())
+        })
+
+
+
+
+
+
 
 
     """
