@@ -8,10 +8,26 @@ from models import setup_db, Question, Category
 
 QUESTIONS_PER_PAGE = 10
 
-def create_app(test_config=None):
-    # create and configure the app
-    app = Flask(__name__)
-    setup_db(app)
+def paginate_questions(request, selection):
+    page = request.args.get("page", 1, type=int)
+    start = (page - 1) * QUESTIONS_PER_PAGE
+    end = start + QUESTIONS_PER_PAGE
+
+    questions = [question.format() for question in selection]
+    current_questions = questions[start:end]
+
+    return current_questions
+
+
+def create_app(db_URI="", test_config=None):
+    app = Flask(__name__)  
+    if db_URI:
+        print('USING NON-DEFAULT DATABASE')
+        setup_db(app,db_URI)
+    else:
+        print('USING DEFUALT DATABASE')
+        setup_db(app)
+    CORS(app)
 
 
     """
@@ -25,32 +41,50 @@ def create_app(test_config=None):
         return response
 
 
-    """
-    @TODO: Use the after_request decorator to set Access-Control-Allow
-    """
 
+    """
+    TEST: At this point, when you start the application
+    you should see questions and categories generated,
+    ten questions per page and pagination at the bottom of the screen for three pages.
+    Clicking on the page numbers should update the questions.
+    """
+    @app.route('/questions')
+    def retrieve_questions():
 
+        selection = Question.query.order_by(Question.id).all()
+        current_questions = paginate_questions(request, selection)
+
+        categories = ['null']
+        for category in Category.query.all():
+            categories.append(category.type)
+
+        if len(current_questions) == 0:
+            abort(404)
+
+        return jsonify({
+            'success':True,
+            'questions':current_questions,
+            'total_questions':len(Question.query.all()),
+            'categories': categories,
+            'current_category': categories[0]
+        })
 
     """
     @TODO:
     Create an endpoint to handle GET requests
     for all available categories.
     """
-    @app.route('/books')
-    # Route that retrivies all books, paginated.
-    # TEST: When completed, the webpage will display books including title, author, and rating shown as stars
-    def retrieve_books():
+    @app.route('/categories/<int:category_id>/questions', methods=['GET'] )
+    def get_categories(category_id):
 
-        selection = Book.query.order_by(Book.id).all()
-        current_books = paginate_books(request, selection)
-
-        if len(current_books) == 0:
-            abort(404)
+        selection = Question.query.filter(Question.category == category_id).order_by(Question.id).all()
+        current_questions = paginate_questions(request, selection)
 
         return jsonify({
             'success':True,
-            'books':current_books,
-            'total_books':len(Book.query.all())
+            'questions': current_questions,
+            'total_questions':len(Question.query.all()),
+            'current_category': Category.query.filter(Category.id == category_id).first().type
         })
 
 
@@ -60,18 +94,6 @@ def create_app(test_config=None):
 
 
 
-    """
-    @TODO:
-    Create an endpoint to handle GET requests for questions,
-    including pagination (every 10 questions).
-    This endpoint should return a list of questions,
-    number of total questions, current category, categories.
-
-    TEST: At this point, when you start the application
-    you should see questions and categories generated,
-    ten questions per page and pagination at the bottom of the screen for three pages.
-    Clicking on the page numbers should update the questions.
-    """
 
     """
     @TODO:
