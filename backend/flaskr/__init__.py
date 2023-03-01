@@ -62,6 +62,10 @@ def create_app(db_URI="", test_config=None):
         response.headers.add("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,OPTIONS")
         return response
 
+    # ----------------------------------------------------- #
+    # --------------------- ENDPOINTS --------------------- #
+    # ----------------------------------------------------- #
+
     @app.route('/questions')
     # Route will return the information to populate the home page,
     # including the categories and paginated selection of questions.
@@ -81,6 +85,7 @@ def create_app(db_URI="", test_config=None):
             'current_category': 0
         })
 
+
     @app.route('/categories', methods=['GET'])
     # Route will return list of categories.
     def retrieve_categories():
@@ -93,7 +98,7 @@ def create_app(db_URI="", test_config=None):
 
     @app.route('/categories/<int:category_id>/questions', methods=['GET'] )
     # Route will return the paginated selection of questions for the selected category.
-    # TEST: The webpage will display categories and questions
+    # TEST: The webpage will display the questions in selected category.
     def get_category_questions(category_id):
 
         selection = Question.query.filter(Question.category == category_id).order_by(Question.id).all()
@@ -135,6 +140,7 @@ def create_app(db_URI="", test_config=None):
         except:
             abort(422)
 
+
     @app.route('/questions', methods=['POST'])
     # Route for posting a new question. 
     # TEST: When submitting a question on the 'Add' tab, 
@@ -174,26 +180,33 @@ def create_app(db_URI="", test_config=None):
             abort(422)
 
 
+    @app.route('/questions/search', methods=['POST'])
+    # Route returns questions based on search term.
+    # TEST: Search by any phrase. The questions list will update 
+    # to include only question that include that string within their 
+    # question. Try using the word "title" to start.
+    def search_questions():
 
-    """
-    @TODO:
-    Create a POST endpoint to get questions based on a search term.
-    It should return any questions for whom the search term
-    is a substring of the question.
+        body = request.get_json()
 
-    TEST: Search by any phrase. The questions list will update to include
-    only question that include that string within their question.
-    Try using the word "title" to start.
-    """
+        try:
+            search_term = body.get('searchTerm',None)
 
-    """
-    @TODO:
-    Create a GET endpoint to get questions based on category.
+            selection = Question.query.filter(Question.question.ilike(r"%{}%".format(search_term))).order_by(Question.id).all()
+            current_questions = paginate_questions(request, selection)
 
-    TEST: In the "List" tab / main screen, clicking on one of the
-    categories in the left column will cause only questions of that
-    category to be shown.
-    """
+            return jsonify({
+                'success': True,
+                'questions': current_questions,
+                'total_questions':len(selection),
+                'categories': get_categories(),
+                'current_category': 0
+            })
+
+        except:
+            abort(400)
+
+
 
     """
     @TODO:
@@ -207,11 +220,44 @@ def create_app(db_URI="", test_config=None):
     and shown whether they were correct or not.
     """
 
-    """
-    @TODO:
-    Create error handlers for all expected errors
-    including 404 and 422.
-    """
+
+    # ----------------------------------------------------- #
+    # --------------------- ERROR HANDLERS ---------------- #
+    # ----------------------------------------------------- #
+    
+    @app.errorhandler(400)
+    def not_found(error):
+        return jsonify({
+            "success": False, 
+            "error": 400,
+            "message": "Bad Request"
+            }), 400
+
+    @app.errorhandler(404)
+    def not_found(error):
+        return jsonify({
+            "success": False, 
+            "error": 404,
+            "message": "Not Found"
+            }), 404
+
+    @app.errorhandler(405)
+    def not_found(error):
+        return jsonify({
+            "success": False, 
+            "error": 405,
+            "message": "Method Not Allowed"
+            }), 405
+
+    @app.errorhandler(422)
+    def not_found(error):
+        return jsonify({
+            "success": False, 
+            "error": 422,
+            "message": "Unprocessable Entity"
+            }), 422
+
+
 
     return app
 
