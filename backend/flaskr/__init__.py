@@ -6,9 +6,21 @@ import random
 
 from models import setup_db, Question, Category
 
+
+# ----------------------------------------------------- #
+# --------------------- GLOBAL VARIABLES -------------- #
+# ----------------------------------------------------- #
+
 QUESTIONS_PER_PAGE = 10
 
+
+# ----------------------------------------------------- #
+# --------------------- HELPER FUNCTIONS -------------- #
+# ----------------------------------------------------- #
+
 def paginate_questions(request, selection):
+    # Function returns a selection of questions based on the 
+    # number of QUESTIONS_PER_PAGE and the current page.
     page = request.args.get("page", 1, type=int)
     start = (page - 1) * QUESTIONS_PER_PAGE
     end = start + QUESTIONS_PER_PAGE
@@ -18,6 +30,20 @@ def paginate_questions(request, selection):
 
     return current_questions
 
+
+def get_categories():
+    # Function returns the name of the categories.
+    categories = ['null']
+    
+    for category in Category.query.all():
+        categories.append(category.type)
+    
+    return categories
+
+
+# ----------------------------------------------------- #
+# --------------------- BEGIN APP --------------------- #
+# ----------------------------------------------------- #
 
 def create_app(db_URI="", test_config=None):
     app = Flask(__name__)  
@@ -29,10 +55,6 @@ def create_app(db_URI="", test_config=None):
         setup_db(app)
     CORS(app)
 
-
-    """
-    @TODO: Set up CORS. Allow '*' for origins. Delete the sample route after completing the TODOs
-    """
     # CORS Headers
     @app.after_request
     def after_request(response):
@@ -40,24 +62,14 @@ def create_app(db_URI="", test_config=None):
         response.headers.add("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,OPTIONS")
         return response
 
-
-
-    """
-    TEST: At this point, when you start the application
-    you should see questions and categories generated,
-    ten questions per page and pagination at the bottom of the screen for three pages.
-    Clicking on the page numbers should update the questions.
-    """
     @app.route('/questions')
+    # Route will return the information to populate the home page,
+    # including the categories and paginated selection of questions.
     def retrieve_questions():
 
         selection = Question.query.order_by(Question.id).all()
         current_questions = paginate_questions(request, selection)
-
-        categories = ['null']
-        for category in Category.query.all():
-            categories.append(category.type)
-
+        
         if len(current_questions) == 0:
             abort(404)
 
@@ -65,17 +77,15 @@ def create_app(db_URI="", test_config=None):
             'success':True,
             'questions':current_questions,
             'total_questions':len(Question.query.all()),
-            'categories': categories,
-            'current_category': categories[0]
+            'categories': get_categories(),
+            'current_category': 0
         })
 
-    """
-    @TODO:
-    Create an endpoint to handle GET requests
-    for all available categories.
-    """
+
     @app.route('/categories/<int:category_id>/questions', methods=['GET'] )
-    def get_categories(category_id):
+    # Route will return the paginated selection of questions for the selected category.
+    # TEST: The webpage will display categories and questions
+    def get_category_questions(category_id):
 
         selection = Question.query.filter(Question.category == category_id).order_by(Question.id).all()
         current_questions = paginate_questions(request, selection)
@@ -83,26 +93,40 @@ def create_app(db_URI="", test_config=None):
         return jsonify({
             'success':True,
             'questions': current_questions,
-            'total_questions':len(Question.query.all()),
-            'current_category': Category.query.filter(Category.id == category_id).first().type
+            'total_questions':len(selection),
+            'categories': get_categories(),
+            'current_category': category_id
         })
 
 
+    @app.route('/questions/<int:question_id>', methods=['DELETE'])
+    # Route will delete a question based on the question's ID.
+    # TEST: When you click the trash icon next to a question, the question will be removed.
+    # TEST: This removal will persist in the database and when you refresh the page.
+    def delete_question(question_id):
+        try:
+            question = Question.query.filter(Question.id == question_id).one_or_none()
+            category_id = question.category
 
+            if question is None:
+                abort(404)
+            
+            question.delete()
+            
+            selection = Question.query.filter(Question.category == category_id).order_by(Question.id).all()
+            current_questions = paginate_questions(request, selection)
 
+            return jsonify({
+                'success': True,
+                'questions': current_questions,
+                'total_questions':len(selection),
+                'categories': get_categories(),
+                'current_category': category_id
+            })
+        except:
+            abort(422)
 
-
-
-
-
-    """
-    @TODO:
-    Create an endpoint to DELETE question using a question ID.
-
-    TEST: When you click the trash icon next to a question, the question will be removed.
-    This removal will persist in the database and when you refresh the page.
-    """
-
+    @app.route('')
     """
     @TODO:
     Create an endpoint to POST a new question,
