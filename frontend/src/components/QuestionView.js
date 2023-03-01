@@ -115,7 +115,11 @@ class QuestionView extends Component {
           url: `/questions/${id}`, //TODO: update request URL
           type: 'DELETE',
           success: (result) => {
-            this.getQuestions();
+            if (result.totalQuestions > 0){
+              this.getByCategory(result.current_category);
+            } else {
+              this.getQuestions();
+            }
           },
           error: (error) => {
             alert('Unable to load questions. Please try your request again');
