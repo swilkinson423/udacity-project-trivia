@@ -172,6 +172,7 @@ class QuestionView extends Component {
               questionAction={this.questionAction(q.id)}
             />
           ))}
+
           <div className='pagination-menu'>{this.createPagination()}</div>
         </div>
       </div>

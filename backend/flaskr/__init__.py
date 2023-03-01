@@ -73,7 +73,7 @@ def create_app(db_URI="", test_config=None):
 
         selection = Question.query.order_by(Question.id).all()
         current_questions = paginate_questions(request, selection)
-        
+
         if len(current_questions) == 0:
             abort(404)
 
@@ -154,30 +154,34 @@ def create_app(db_URI="", test_config=None):
         new_difficulty  = body.get("difficulty", None)
         new_category    = body.get("category", None)
 
-        try: 
-            question = Question(
-                question    = new_question,
-                answer      = new_answer,
-                difficulty  = new_difficulty,
-                category    = new_category
-            )
+        if new_question & new_answer & new_difficulty & new_category:
 
-            question.insert()
+            try: 
+                question = Question(
+                    question    = new_question,
+                    answer      = new_answer,
+                    difficulty  = new_difficulty,
+                    category    = new_category
+                )
 
-            selection = Question.query.order_by(Question.id).all()
-            current_questions = paginate_questions(request, selection)
+                question.insert()
 
-            return jsonify({
-                'success': True,
-                'created': question.id,
-                'questions': current_questions,
-                'total_questions':len(selection),
-                'categories': get_categories(),
-                'current_category': 0
-            })
+                selection = Question.query.order_by(Question.id).all()
+                current_questions = paginate_questions(request, selection)
 
-        except:
-            abort(422)
+                return jsonify({
+                    'success': True,
+                    'created': question.id,
+                    'questions': current_questions,
+                    'total_questions':len(selection),
+                    'categories': get_categories(),
+                    'current_category': 0
+                })
+
+            except:
+                abort(422)
+        else:
+            abort(400)
 
 
     @app.route('/questions/search', methods=['POST'])
@@ -207,18 +211,51 @@ def create_app(db_URI="", test_config=None):
             abort(400)
 
 
+    @app.route('/quizzes', methods=['POST'])
+    # Route for getting questions to play the quiz.
+    # TEST: In the "Play" tab, after a user selects "All" or a category,
+    # one question at a time is displayed, the user is allowed to answer
+    # and shown whether they were correct or not.
+    def play_quiz():
 
-    """
-    @TODO:
-    Create a POST endpoint to get questions to play the quiz.
-    This endpoint should take category and previous question parameters
-    and return a random questions within the given category,
-    if provided, and that is not one of the previous questions.
+        body = request.get_json()
 
-    TEST: In the "Play" tab, after a user selects "All" or a category,
-    one question at a time is displayed, the user is allowed to answer
-    and shown whether they were correct or not.
-    """
+        category            = body.get('quiz_category', None)['id']
+        previous_questions  = body.get('previous_questions', None)
+
+        if category != 0:
+            question_list = Question.query.filter(Question.category == category).all()
+        else:
+            question_list = Question.query.all()
+
+        for question in question_list[:]:
+            if question.id in previous_questions:
+                question_list.remove(question)
+        
+        print("PREVIOUS QUESTIONS:")
+        print(previous_questions)
+        print("QUESTION LIST:")
+        print(question_list)
+
+        if len(question_list) > 0:
+            question = random.choice(question_list)
+
+            current_question = {
+                "id":           question.id,
+                "question":     question.question,
+                "answer":       question.answer,
+                "difficulty":   question.difficulty,
+                "category":     question.category
+            }
+        else:
+            current_question = False
+
+        return jsonify({
+            'success': True,
+            'question': current_question
+        })
+
+
 
 
     # ----------------------------------------------------- #
