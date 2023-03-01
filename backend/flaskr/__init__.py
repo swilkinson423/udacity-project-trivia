@@ -76,9 +76,18 @@ def create_app(db_URI="", test_config=None):
         return jsonify({
             'success':True,
             'questions':current_questions,
-            'total_questions':len(Question.query.all()),
+            'total_questions':len(selection),
             'categories': get_categories(),
             'current_category': 0
+        })
+
+    @app.route('/categories', methods=['GET'])
+    # Route will return list of categories.
+    def retrieve_categories():
+
+        return jsonify({
+            'success':True,
+            'categories': get_categories()
         })
 
 
@@ -126,17 +135,45 @@ def create_app(db_URI="", test_config=None):
         except:
             abort(422)
 
-    @app.route('')
-    """
-    @TODO:
-    Create an endpoint to POST a new question,
-    which will require the question and answer text,
-    category, and difficulty score.
+    @app.route('/questions', methods=['POST'])
+    # Route for posting a new question. 
+    # TEST: When submitting a question on the 'Add' tab, 
+    # form will clear and question will appear at the end of question list
+    def post_question():
 
-    TEST: When you submit a question on the "Add" tab,
-    the form will clear and the question will appear at the end of the last page
-    of the questions list in the "List" tab.
-    """
+        body = request.get_json()
+
+        new_question    = body.get("question", None)
+        new_answer      = body.get("answer", None)
+        new_difficulty  = body.get("difficulty", None)
+        new_category    = body.get("category", None)
+
+        try: 
+            question = Question(
+                question    = new_question,
+                answer      = new_answer,
+                difficulty  = new_difficulty,
+                category    = new_category
+            )
+
+            question.insert()
+
+            selection = Question.query.order_by(Question.id).all()
+            current_questions = paginate_questions(request, selection)
+
+            return jsonify({
+                'success': True,
+                'created': question.id,
+                'questions': current_questions,
+                'total_questions':len(selection),
+                'categories': get_categories(),
+                'current_category': 0
+            })
+
+        except:
+            abort(422)
+
+
 
     """
     @TODO:
