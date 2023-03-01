@@ -231,11 +231,6 @@ def create_app(db_URI="", test_config=None):
         for question in question_list[:]:
             if question.id in previous_questions:
                 question_list.remove(question)
-        
-        print("PREVIOUS QUESTIONS:")
-        print(previous_questions)
-        print("QUESTION LIST:")
-        print(question_list)
 
         if len(question_list) > 0:
             question = random.choice(question_list)
