@@ -207,9 +207,6 @@ def create_app(db_URI="", test_config=None):
 
     @app.route('/quizzes', methods=['POST'])
     # Route for getting questions to play the quiz.
-    # TEST: In the "Play" tab, after a user selects "All" or a category,
-    # one question at a time is displayed, the user is allowed to answer
-    # and shown whether they were correct or not.
     def play_quiz():
 
         body = request.get_json()
