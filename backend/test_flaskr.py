@@ -12,18 +12,21 @@ class TriviaTestCase(unittest.TestCase):
 
     def setUp(self):
         """Define test variables and initialize app."""
-        self.app = create_app()
-        self.client = self.app.test_client
+        
         self.database_name = "trivia_test"
-        self.database_path = "postgres://{}/{}".format('localhost:5432', self.database_name)
-        setup_db(self.app, self.database_path)
+        self.database_path = "postgresql://{}:{}@{}/{}".format(
+            "student", "student", "localhost:5432", self.database_name
+        )
 
-        # binds the app to the current context
-        with self.app.app_context():
-            self.db = SQLAlchemy()
-            self.db.init_app(self.app)
-            # create all tables
-            self.db.create_all()
+        self.app = create_app(self.database_path)
+        self.client = self.app.test_client
+
+        self.new_trivia = {
+            "question": "Who let the dogs out?",
+            "answer": "The Baja Men...I think",
+            "category": 1,
+            "difficulty": 5
+        }
     
     def tearDown(self):
         """Executed after reach test"""
@@ -33,6 +36,23 @@ class TriviaTestCase(unittest.TestCase):
     TODO
     Write at least one test for each test for successful operation and for expected errors.
     """
+    # TODO: TEST FOR GET QUESTIONS
+    # TODO: TEST FOR GET QUESTIONS (ERROR 404)
+    # TODO: TEST FOR GET CATEGORIES
+    # TODO: TEST FOR GET QUESTIONS IN CATEGORY
+    # TODO: TEST FOR DELETE QUESTION
+    # TODO: TEST FOR DELETE QUESTION (ERROR 404)
+    # TODO: TEST FOR DELETE QUESTION (ERROR 422)
+    # TODO: TEST FOR POST QUESTION
+    # TODO: TEST FOR POST QUESTION (ERROR 422)
+    # TODO: TEST FOR POST QUESTION (ERROR 400)
+    # TODO: TEST FOR SEARCH QUESTION
+    # TODO: TEST FOR SEARCH QUESTION (ERROR 400)
+    # TODO: TEST FOR START QUIZ (ALL QUESTIONS)
+    # TODO: TEST FOR START QUIZ (CATEGORY QUESTIONS)
+    
+
+
 
 
 # Make the tests conveniently executable

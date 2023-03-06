@@ -98,7 +98,6 @@ def create_app(db_URI="", test_config=None):
 
     @app.route('/categories/<int:category_id>/questions', methods=['GET'] )
     # Route will return the paginated selection of questions for the selected category.
-    # TEST: The webpage will display the questions in selected category.
     def get_category_questions(category_id):
 
         selection = Question.query.filter(Question.category == category_id).order_by(Question.id).all()
@@ -115,8 +114,6 @@ def create_app(db_URI="", test_config=None):
 
     @app.route('/questions/<int:question_id>', methods=['DELETE'])
     # Route will delete a question based on the question's ID.
-    # TEST: When you click the trash icon next to a question, the question will be removed.
-    # TEST: This removal will persist in the database and when you refresh the page.
     def delete_question(question_id):
         try:
             question = Question.query.filter(Question.id == question_id).one_or_none()
@@ -186,9 +183,6 @@ def create_app(db_URI="", test_config=None):
 
     @app.route('/questions/search', methods=['POST'])
     # Route returns questions based on search term.
-    # TEST: Search by any phrase. The questions list will update 
-    # to include only question that include that string within their 
-    # question. Try using the word "title" to start.
     def search_questions():
 
         body = request.get_json()
