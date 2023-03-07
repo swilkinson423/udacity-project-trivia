@@ -132,6 +132,7 @@ def create_app(db_URI="", test_config=None):
 
             return jsonify({
                 'success': True,
+                'deleted': question_id,
                 'questions': current_questions,
                 'total_questions':len(selection),
                 'categories': get_categories(),
@@ -152,7 +153,7 @@ def create_app(db_URI="", test_config=None):
         new_difficulty  = body.get("difficulty", None)
         new_category    = body.get("category", None)
 
-        if new_question & new_answer & new_difficulty & new_category:
+        if new_question and new_answer and new_difficulty and new_category:
 
             try: 
                 question = Question(
@@ -161,6 +162,9 @@ def create_app(db_URI="", test_config=None):
                     difficulty  = new_difficulty,
                     category    = new_category
                 )
+
+                if body.get("id"):
+                    question.id = body.get("id")
 
                 question.insert()
 

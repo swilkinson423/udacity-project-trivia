@@ -22,6 +22,7 @@ class TriviaTestCase(unittest.TestCase):
         self.client = self.app.test_client
 
         self.new_trivia = {
+            "id": 1,
             "question": "Who let the dogs out?",
             "answer": "The Baja Men...I think",
             "category": 1,
@@ -71,23 +72,40 @@ class TriviaTestCase(unittest.TestCase):
         self.assertTrue(data["current_category"], 2)
 
     def test_get_questions_category_out_of_bounds(self):
-        print("OUT OF BOUNDS")
         res = self.client().get("/categories/1000/questions")
         data = json.loads(res.data)
 
-        print(res.status_code)
         self.assertEqual(res.status_code, 404)
         self.assertEqual(data["success"], False)
         self.assertEqual(data["message"], "Not Found")
 
+    # TESTS FOR [POST '/questions']
+    def test_create_new_question(self):
+        res = self.client().post("/questions", json=self.new_trivia)
+        data = json.loads(res.data)
 
-    # TODO: TEST FOR GET QUESTIONS IN CATEGORY
-    # TODO: TEST FOR DELETE QUESTION
-    # TODO: TEST FOR DELETE QUESTION (ERROR 404)
-    # TODO: TEST FOR DELETE QUESTION (ERROR 422)
-    # TODO: TEST FOR POST QUESTION
-    # TODO: TEST FOR POST QUESTION (ERROR 422)
-    # TODO: TEST FOR POST QUESTION (ERROR 400)
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data["success"], True)
+        self.assertTrue(data["created"])
+        self.assertTrue(len(data["questions"]))
+
+    # TESTS FOR [DELETE '/questions/<question_id>']
+    def test_delete_question(self):
+        res = self.client().delete("/questions/1")
+        data = json.loads(res.data)
+    
+        with self.app.app_context():
+            question_id = 1
+            question = Question.query.filter(Question.id == question_id -1).one_or_none()
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data["success"], True)
+        self.assertEqual(data["deleted"], 1)
+        self.assertTrue(data["total_questions"])
+        self.assertTrue(len(data["questions"]))
+        self.assertEqual(question, None)
+
+
     # TODO: TEST FOR SEARCH QUESTION
     # TODO: TEST FOR SEARCH QUESTION (ERROR 400)
     # TODO: TEST FOR START QUIZ (ALL QUESTIONS)
