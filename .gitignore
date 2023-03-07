@@ -1,0 +1,22 @@
+.vscode
+__pycache__
+venv
+
+# GITHUB FILES #
+.github
+.gitattributes
+
+# VIRTUAL ENVS #
+env/
+test_env/
+
+# OS generated files #
+######################
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+frontend/node_modules/
