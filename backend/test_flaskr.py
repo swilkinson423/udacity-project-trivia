@@ -59,6 +59,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data["success"], True)
         self.assertTrue(data["categories"])
     
+    # TESTS FOR [GET '/categories/<category_id>/questions']
     def test_get_questions_by_category(self):
         res = self.client().get("/categories/2/questions")
         data = json.loads(res.data)
@@ -69,6 +70,15 @@ class TriviaTestCase(unittest.TestCase):
         self.assertTrue(len(data["questions"]))
         self.assertTrue(data["current_category"], 2)
 
+    def test_get_questions_category_out_of_bounds(self):
+        print("OUT OF BOUNDS")
+        res = self.client().get("/categories/1000/questions")
+        data = json.loads(res.data)
+
+        print(res.status_code)
+        self.assertEqual(res.status_code, 404)
+        self.assertEqual(data["success"], False)
+        self.assertEqual(data["message"], "Not Found")
 
 
     # TODO: TEST FOR GET QUESTIONS IN CATEGORY
