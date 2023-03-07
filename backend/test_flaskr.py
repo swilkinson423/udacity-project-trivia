@@ -106,14 +106,24 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(question, None)
 
 
-    # TODO: TEST FOR SEARCH QUESTION
-    # TODO: TEST FOR SEARCH QUESTION (ERROR 400)
-    # TODO: TEST FOR START QUIZ (ALL QUESTIONS)
-    # TODO: TEST FOR START QUIZ (CATEGORY QUESTIONS)
-    
+    # TESTS FOR [POST '/questions/search']
+    def test_get_question_search_with_results(self):
+        res = self.client().post("/questions/search", json={"searchTerm": "Which"})
+        data = json.loads(res.data)
 
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data["success"], True)
+        self.assertTrue(data["total_questions"])
+        self.assertEqual(len(data["questions"]), 7)
 
+    def test_get_question_search_without_results(self):
+        res = self.client().post("/questions/search", json={"searchTerm": "banana bread"})
+        data = json.loads(res.data)
 
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data["success"], True)
+        self.assertEqual(data["total_questions"], 0)
+        self.assertEqual(len(data["questions"]), 0)
 
 # Make the tests conveniently executable
 if __name__ == "__main__":
