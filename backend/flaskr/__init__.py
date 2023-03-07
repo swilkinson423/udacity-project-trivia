@@ -66,7 +66,7 @@ def create_app(db_URI="", test_config=None):
     # --------------------- ENDPOINTS --------------------- #
     # ----------------------------------------------------- #
 
-    @app.route('/questions')
+    @app.route('/questions', methods=['GET'])
     # Route will return the information to populate the home page,
     # including the categories and paginated selection of questions.
     def retrieve_questions():
@@ -140,8 +140,6 @@ def create_app(db_URI="", test_config=None):
 
     @app.route('/questions', methods=['POST'])
     # Route for posting a new question. 
-    # TEST: When submitting a question on the 'Add' tab, 
-    # form will clear and question will appear at the end of question list
     def post_question():
 
         body = request.get_json()

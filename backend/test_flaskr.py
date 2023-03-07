@@ -32,6 +32,7 @@ class TriviaTestCase(unittest.TestCase):
         """Executed after reach test"""
         pass
 
+    # TESTS FOR [GET '/questions']
     def test_get_paginated_questions(self):
         res = self.client().get("/questions")
         data = json.loads(res.data)
@@ -43,13 +44,23 @@ class TriviaTestCase(unittest.TestCase):
 
     def test_404_sent_requesting_beyond_valid_page(self):
         res = self.client().get("/questions?page=1000")
-        data = self.json.loads(res.data)
+        data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 404)
         self.assertEqual(data["success"], False)
         self.assertEqual(data["message"], "Not Found")
 
-    # TODO: TEST FOR GET CATEGORIES
+    # TESTS FOR [GET '/categories']
+    def test_get_categories(self):
+        res = self.client().get("/categories")
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data["success"], True)
+        self.assertTrue(data["categories"])
+    
+
+
     # TODO: TEST FOR GET QUESTIONS IN CATEGORY
     # TODO: TEST FOR DELETE QUESTION
     # TODO: TEST FOR DELETE QUESTION (ERROR 404)
